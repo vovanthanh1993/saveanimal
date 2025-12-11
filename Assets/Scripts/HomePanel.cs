@@ -4,26 +4,21 @@ using UnityEngine.SceneManagement;
 using TMPro;
 public class HomePanel : MonoBehaviour
 {
-    public Button upgradeBtn;
+    public Button shopBtn;
     public Button playBtn;
     public TextMeshProUGUI coinText;
-    public TextMeshProUGUI healthText;
-    public TextMeshProUGUI damageText;
-    public TextMeshProUGUI speedText;
 
     void Start()
     {
-        upgradeBtn.onClick.AddListener(OnUpgradeButtonClicked); 
+        shopBtn.onClick.AddListener(OnShopButtonClicked); 
         playBtn.onClick.AddListener(OnPlayButtonClicked);
         UpdateRewardDisplay();
-        UpdateHealthDisplay();
-        UpdateDamageDisplay();
-        UpdateSpeedDisplay();
     }
 
-    void OnUpgradeButtonClicked()
+    void OnShopButtonClicked()
     {
-        //UIManager.Instance.ShowSettingPanel(true);
+        UIManager.Instance.ShowHomePanel(false);
+        UIManager.Instance.ShowCharacterSelectPanel(true);
     }
 
     void OnPlayButtonClicked()
@@ -34,9 +29,6 @@ public class HomePanel : MonoBehaviour
     private void OnEnable() {
         UIManager.Instance.ShowGamePlayPanel(false);
         UpdateRewardDisplay();
-        UpdateHealthDisplay();
-        UpdateDamageDisplay();
-        UpdateSpeedDisplay();
     }
 
     /// <summary>
@@ -57,48 +49,4 @@ public class HomePanel : MonoBehaviour
         }
     }
 
-    public void UpdateHealthDisplay()
-    {
-        if (healthText != null)
-        {
-            if (PlayerDataManager.Instance != null && PlayerDataManager.Instance.playerData != null)
-            {
-                healthText.text = PlayerDataManager.Instance.playerData.health.ToString();
-            }
-            else
-            {
-                healthText.text = "0";
-            }
-        }
-    }
-
-    public void UpdateDamageDisplay()
-    {
-        if (damageText != null)
-        {
-            if (PlayerDataManager.Instance != null && PlayerDataManager.Instance.playerData != null)
-            {
-                damageText.text = PlayerDataManager.Instance.playerData.damage.ToString();
-            }
-            else
-            {
-                damageText.text = "0";
-            }
-        }
-    }
-
-    public void UpdateSpeedDisplay()
-    {
-        if (speedText != null)
-        {
-            if (PlayerDataManager.Instance != null && PlayerDataManager.Instance.playerData != null)
-            {
-                speedText.text = PlayerDataManager.Instance.playerData.speed.ToString();
-            }
-            else
-            {
-                speedText.text = "0";
-            }
-        }
-    }
 }

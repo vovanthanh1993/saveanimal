@@ -309,4 +309,8 @@ public class AudioManager : MonoBehaviour
     public void PlayCheckpointSound() {
         PlaySound("se_checkpoint");
     }
+
+    public void PlayRewardSound() {
+        PlaySound("se_open_reward");
+    }
 }

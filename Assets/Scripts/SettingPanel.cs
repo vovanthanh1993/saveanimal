@@ -9,25 +9,12 @@ public class SettingPanel : MonoBehaviour
     public Button closeBtn;
     
     [Header("SFX Settings")]
-    [Tooltip("Nút tăng SFX volume")]
-    public Button sfxIncreaseBtn;
-    [Tooltip("Nút giảm SFX volume")]
-    public Button sfxDecreaseBtn;
-    [Tooltip("Image để hiển thị SFX volume (fillAmount)")]
-    public Image sfxFillImage;
+    [Tooltip("Slider để điều chỉnh SFX volume")]
+    public Slider sfxSlider;
     
     [Header("Music Settings")]
-    [Tooltip("Nút tăng Music volume")]
-    public Button musicIncreaseBtn;
-    [Tooltip("Nút giảm Music volume")]
-    public Button musicDecreaseBtn;
-    [Tooltip("Image để hiển thị Music volume (fillAmount)")]
-    public Image musicFillImage;
-    
-    [Header("Volume Settings")]
-    [Tooltip("Bước tăng/giảm volume mỗi lần nhấn nút (0-1)")]
-    [Range(0.01f, 0.2f)]
-    public float volumeStep = 0.1f;
+    [Tooltip("Slider để điều chỉnh Music volume")]
+    public Slider musicSlider;
     
     private float currentSFXVolume = 1f;
     private float currentMusicVolume = 1f;
@@ -36,6 +23,18 @@ public class SettingPanel : MonoBehaviour
         if(SceneManager.GetActiveScene().name == "HomeScene") 
             homeBtn.gameObject.SetActive(false);
         else homeBtn.gameObject.SetActive(true);
+        
+        // Đảm bảo Slider được enable và interactable
+        if (sfxSlider != null)
+        {
+            sfxSlider.interactable = true;
+            sfxSlider.enabled = true;
+        }
+        if (musicSlider != null)
+        {
+            musicSlider.interactable = true;
+            musicSlider.enabled = true;
+        }
         
         // Load volume từ PlayerPrefs hoặc dùng giá trị mặc định
         LoadVolumeSettings();
@@ -46,17 +45,29 @@ public class SettingPanel : MonoBehaviour
         homeBtn.onClick.AddListener(OnHomeButtonClicked);   
         closeBtn.onClick.AddListener(OnCloseButtonClicked);
         
-        // SFX buttons
-        if (sfxIncreaseBtn != null)
-            sfxIncreaseBtn.onClick.AddListener(OnSFXIncreaseClicked);
-        if (sfxDecreaseBtn != null)
-            sfxDecreaseBtn.onClick.AddListener(OnSFXDecreaseClicked);
+        // SFX Slider
+        if (sfxSlider != null)
+        {
+            sfxSlider.minValue = 0f;
+            sfxSlider.maxValue = 1f;
+            sfxSlider.interactable = true;
+            sfxSlider.enabled = true;
+            // Xóa listener cũ nếu có để tránh duplicate
+            sfxSlider.onValueChanged.RemoveAllListeners();
+            sfxSlider.onValueChanged.AddListener(OnSFXValueChanged);
+        }
         
-        // Music buttons
-        if (musicIncreaseBtn != null)
-            musicIncreaseBtn.onClick.AddListener(OnMusicIncreaseClicked);
-        if (musicDecreaseBtn != null)
-            musicDecreaseBtn.onClick.AddListener(OnMusicDecreaseClicked);
+        // Music Slider
+        if (musicSlider != null)
+        {
+            musicSlider.minValue = 0f;
+            musicSlider.maxValue = 1f;
+            musicSlider.interactable = true;
+            musicSlider.enabled = true;
+            // Xóa listener cũ nếu có để tránh duplicate
+            musicSlider.onValueChanged.RemoveAllListeners();
+            musicSlider.onValueChanged.AddListener(OnMusicValueChanged);
+        }
     }
 
     public void OnHomeButtonClicked(){
@@ -73,32 +84,14 @@ public class SettingPanel : MonoBehaviour
     
     #region SFX Volume Control
     
-    private void OnSFXIncreaseClicked()
+    private void OnSFXValueChanged(float value)
     {
-        currentSFXVolume = Mathf.Clamp01(currentSFXVolume + volumeStep);
+        currentSFXVolume = value;
         ApplySFXVolume();
-        UpdateUI();
         SaveVolumeSettings();
         
-        // Phát sound khi điều chỉnh
-        if (AudioManager.Instance != null)
-        {
-            AudioManager.Instance.PlayChangeSound();
-        }
-    }
-    
-    private void OnSFXDecreaseClicked()
-    {
-        currentSFXVolume = Mathf.Clamp01(currentSFXVolume - volumeStep);
-        ApplySFXVolume();
-        UpdateUI();
-        SaveVolumeSettings();
-        
-        // Phát sound khi điều chỉnh
-        if (AudioManager.Instance != null)
-        {
-            AudioManager.Instance.PlayChangeSound();
-        }
+        // Phát sound khi điều chỉnh (chỉ khi người dùng thả tay)
+        // Có thể thêm logic để chỉ phát khi drag end nếu cần
     }
     
     private void ApplySFXVolume()
@@ -113,32 +106,14 @@ public class SettingPanel : MonoBehaviour
     
     #region Music Volume Control
     
-    private void OnMusicIncreaseClicked()
+    private void OnMusicValueChanged(float value)
     {
-        currentMusicVolume = Mathf.Clamp01(currentMusicVolume + volumeStep);
+        currentMusicVolume = value;
         ApplyMusicVolume();
-        UpdateUI();
         SaveVolumeSettings();
         
-        // Phát sound khi điều chỉnh
-        if (AudioManager.Instance != null)
-        {
-            AudioManager.Instance.PlayChangeSound();
-        }
-    }
-    
-    private void OnMusicDecreaseClicked()
-    {
-        currentMusicVolume = Mathf.Clamp01(currentMusicVolume - volumeStep);
-        ApplyMusicVolume();
-        UpdateUI();
-        SaveVolumeSettings();
-        
-        // Phát sound khi điều chỉnh
-        if (AudioManager.Instance != null)
-        {
-            AudioManager.Instance.PlayChangeSound();
-        }
+        // Phát sound khi điều chỉnh (chỉ khi người dùng thả tay)
+        // Có thể thêm logic để chỉ phát khi drag end nếu cần
     }
     
     private void ApplyMusicVolume()
@@ -155,16 +130,16 @@ public class SettingPanel : MonoBehaviour
     
     private void UpdateUI()
     {
-        // Update SFX UI
-        if (sfxFillImage != null)
+        // Update SFX Slider
+        if (sfxSlider != null)
         {
-            sfxFillImage.fillAmount = currentSFXVolume;
+            sfxSlider.value = currentSFXVolume;
         }
         
-        // Update Music UI
-        if (musicFillImage != null)
+        // Update Music Slider
+        if (musicSlider != null)
         {
-            musicFillImage.fillAmount = currentMusicVolume;
+            musicSlider.value = currentMusicVolume;
         }
     }
     

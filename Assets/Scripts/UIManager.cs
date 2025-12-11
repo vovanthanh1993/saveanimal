@@ -19,6 +19,8 @@ public class UIManager : MonoBehaviour
 
     public SettingPanel settingPanel;
 
+    public GameObject characterSelectPanel;
+
     private void Awake()
     {
         if (Instance == null)
@@ -44,13 +46,13 @@ public class UIManager : MonoBehaviour
         {
             selectLevelPanel.SetActive(isShow);
             
-            // Refresh LevelController khi panel được hiển thị
+            // Refresh SelectLevelPanel khi panel được hiển thị
             if (isShow)
             {
-                LevelController levelController = selectLevelPanel.GetComponentInChildren<LevelController>();
-                if (levelController != null)
+                SelectLevelPanel selectLevelPanelComponent = selectLevelPanel.GetComponentInChildren<SelectLevelPanel>();
+                if (selectLevelPanelComponent != null)
                 {
-                    levelController.Refresh();
+                    selectLevelPanelComponent.Refresh();
                 }
             }
         }
@@ -84,12 +86,23 @@ public class UIManager : MonoBehaviour
         homePanel.gameObject.SetActive(false);
         noticePanel.gameObject.SetActive(false);
         settingPanel.gameObject.SetActive(false);
+        if (characterSelectPanel != null)
+        {
+            characterSelectPanel.SetActive(false);
+        }
     }
 
     public void ShowSettingPanel(bool isShow) {
         if (settingPanel != null)
         {
             settingPanel.gameObject.SetActive(isShow);
+        }
+    }
+
+    public void ShowCharacterSelectPanel(bool isShow) {
+        if (characterSelectPanel != null)
+        {
+            characterSelectPanel.SetActive(isShow);
         }
     }
 }

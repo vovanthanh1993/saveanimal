@@ -164,5 +164,6 @@ public class StartPanel : MonoBehaviour
         UIManager.Instance.ShowGamePlayPanel(true);
         gameObject.SetActive(false);
         UIManager.Instance.ShowHomePanel(false);
+        UIManager.Instance.ShowSelectLevelPanel(false);
     }
 }

@@ -32,7 +32,6 @@ public class PlayerController : MonoBehaviour
     
     // Components
     public PlayerAnimation playerAnimation;
-    private CameraController cameraController;
     
     private Vector3 initialSpawnPosition;
 
@@ -95,8 +94,7 @@ public class PlayerController : MonoBehaviour
             initialSpawnPosition = transform.position;
         }
         
-        // Setup camera
-        SetupCamera();
+        // Camera sẽ được quản lý bởi CameraFollowController tự động
     }
 
     private void Update()
@@ -123,24 +121,6 @@ public class PlayerController : MonoBehaviour
     }
 
     #region Initialization
-
-    private void SetupCamera()
-    {
-        if (isDisable) return;
-        
-        if (camTarget != null)
-        {
-            camTarget.gameObject.SetActive(true);
-        }
-        
-        // Tìm CameraController
-        cameraController = FindObjectOfType<CameraController>();
-        if (cameraController != null && camTarget != null)
-        {
-            cameraController.SetTarget(camTarget);
-        }
-    }
-
     #endregion
 
     #region Input Handling
@@ -150,6 +130,7 @@ public class PlayerController : MonoBehaviour
         if (InputManager.Instance == null) return;
 
         HandleMovement();
+        HandleCheatInput();
     }
 
     private void HandleMovement()
@@ -219,6 +200,43 @@ public class PlayerController : MonoBehaviour
         // Chuyển đổi input direction sang world direction
         Vector3 direction = new Vector3(inputDirection.x, 0f, inputDirection.y);
         return rotation * direction;
+    }
+
+    /// <summary>
+    /// Xử lý input cheat/debug (F1 để thêm 1000 gold)
+    /// </summary>
+    private void HandleCheatInput()
+    {
+        // Nhấn F1 để thêm 1000 gold (sử dụng Input System)
+        if (Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame)
+        {
+            AddGold(1000);
+        }
+    }
+
+    /// <summary>
+    /// Thêm gold vào PlayerData
+    /// </summary>
+    /// <param name="amount">Số lượng gold cần thêm</param>
+    private void AddGold(int amount)
+    {
+        if (PlayerDataManager.Instance != null && PlayerDataManager.Instance.playerData != null)
+        {
+            PlayerDataManager.Instance.playerData.totalReward += amount;
+            PlayerDataManager.Instance.Save();
+            
+            Debug.Log($"Đã thêm {amount} gold. Tổng gold hiện tại: {PlayerDataManager.Instance.playerData.totalReward}");
+            
+            // Cập nhật UI nếu đang ở HomePanel
+            if (UIManager.Instance != null && UIManager.Instance.homePanel != null)
+            {
+                UIManager.Instance.homePanel.UpdateRewardDisplay();
+            }
+        }
+        else
+        {
+            Debug.LogWarning("PlayerController: Không thể thêm gold vì PlayerDataManager không tồn tại!");
+        }
     }
 
     #endregion
@@ -407,15 +425,7 @@ public class PlayerController : MonoBehaviour
         
         if (disable)
         {
-            if (cameraController != null)
-            {
-                cameraController.SetTarget(null);
-            }
             SetIdleAnimation();
-        }
-        else
-        {
-            SetupCamera();
         }
     }
 
