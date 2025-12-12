@@ -180,6 +180,9 @@ public class QuestDataManager : MonoBehaviour
         }
         
         // Tạo objectives ngẫu nhiên
+        const int MAX_TOTAL_ANIMALS = 13; // Tổng số con vật tối đa trong một quest
+        int totalAnimals = 0;
+        
         for (int i = 0; i < objectivesCount && availableAnimalTypes.Count > 0; i++)
         {
             // Chọn ngẫu nhiên một AnimalType chưa dùng
@@ -187,8 +190,27 @@ public class QuestDataManager : MonoBehaviour
             AnimalType randomAnimalType = availableAnimalTypes[randomIndex];
             availableAnimalTypes.RemoveAt(randomIndex); // Xóa để không trùng lặp
             
-            // requiredAmount ngẫu nhiên trong phạm vi
-            int requiredAmount = Random.Range(minRequiredAmount, maxRequiredAmount + 1);
+            // Tính số lượng còn lại có thể phân bổ
+            int remainingSlots = objectivesCount - i - 1; // Số loại animal còn lại cần tạo
+            int maxAllowedForThis = MAX_TOTAL_ANIMALS - totalAnimals - (remainingSlots * minRequiredAmount);
+            
+            // Đảm bảo ít nhất là minRequiredAmount và không vượt quá giới hạn
+            int maxAmount = Mathf.Min(maxRequiredAmount, maxAllowedForThis);
+            if (maxAmount < minRequiredAmount)
+            {
+                maxAmount = minRequiredAmount;
+            }
+            
+            // requiredAmount ngẫu nhiên trong phạm vi, nhưng không vượt quá tổng 13 con
+            int requiredAmount = Random.Range(minRequiredAmount, maxAmount + 1);
+            
+            // Đảm bảo không vượt quá tổng 13 con
+            if (totalAnimals + requiredAmount > MAX_TOTAL_ANIMALS)
+            {
+                requiredAmount = Mathf.Max(minRequiredAmount, MAX_TOTAL_ANIMALS - totalAnimals);
+            }
+            
+            totalAnimals += requiredAmount;
             
             QuestObjective objective = new QuestObjective
             {
@@ -209,7 +231,16 @@ public class QuestDataManager : MonoBehaviour
                 AnimalType randomAnimalType = availableAnimalTypes[randomIndex];
                 availableAnimalTypes.RemoveAt(randomIndex);
                 
-                int requiredAmount = Random.Range(minRequiredAmount, maxRequiredAmount + 1);
+                // Kiểm tra số lượng còn lại có thể phân bổ
+                int maxAllowedForThis = MAX_TOTAL_ANIMALS - totalAnimals;
+                int requiredAmount = Random.Range(minRequiredAmount, Mathf.Min(maxRequiredAmount, maxAllowedForThis) + 1);
+                
+                if (totalAnimals + requiredAmount > MAX_TOTAL_ANIMALS)
+                {
+                    requiredAmount = Mathf.Max(minRequiredAmount, MAX_TOTAL_ANIMALS - totalAnimals);
+                }
+                
+                totalAnimals += requiredAmount;
                 
                 QuestObjective objective = new QuestObjective
                 {
@@ -217,6 +248,23 @@ public class QuestDataManager : MonoBehaviour
                     requiredAmount = requiredAmount
                 };
                 objectives.Add(objective);
+            }
+        }
+        
+        // Đảm bảo tổng số con vật không vượt quá 13
+        if (totalAnimals > MAX_TOTAL_ANIMALS)
+        {
+            Debug.LogWarning($"QuestDataManager: Quest {questId} có tổng {totalAnimals} con vật, vượt quá giới hạn {MAX_TOTAL_ANIMALS}. Đang điều chỉnh...");
+            // Điều chỉnh lại các requiredAmount để tổng không vượt quá 13
+            int excess = totalAnimals - MAX_TOTAL_ANIMALS;
+            for (int i = objectives.Count - 1; i >= 0 && excess > 0; i--)
+            {
+                int reduction = Mathf.Min(excess, objectives[i].requiredAmount - minRequiredAmount);
+                if (reduction > 0)
+                {
+                    objectives[i].requiredAmount -= reduction;
+                    excess -= reduction;
+                }
             }
         }
         

@@ -86,12 +86,6 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
-        // Load move speed from PlayerDataManager if available
-        if (PlayerDataManager.Instance != null)
-        {
-            moveSpeed = PlayerDataManager.Instance.playerData.speed / 10f;
-        }
-        
         // Lưu vị trí spawn point
         if (spawnPoint != null)
         {
@@ -215,7 +209,7 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Xử lý input cheat/debug (F1 để thêm 1000 gold)
+    /// Xử lý input cheat/debug (F1 để thêm 1000 gold, F2 để unlock tất cả level)
     /// </summary>
     private void HandleCheatInput()
     {
@@ -223,6 +217,12 @@ public class PlayerController : MonoBehaviour
         if (Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame)
         {
             AddGold(1000);
+        }
+        
+        // Nhấn F2 để unlock tất cả level
+        if (Keyboard.current != null && Keyboard.current.f2Key.wasPressedThisFrame)
+        {
+            UnlockAllLevels();
         }
     }
 
@@ -248,6 +248,59 @@ public class PlayerController : MonoBehaviour
         else
         {
             Debug.LogWarning("PlayerController: Không thể thêm gold vì PlayerDataManager không tồn tại!");
+        }
+    }
+    
+    /// <summary>
+    /// Unlock tất cả level (cheat code F2)
+    /// </summary>
+    private void UnlockAllLevels()
+    {
+        // Lấy tổng số level
+        int totalLevels = 50; // Mặc định
+        
+        if (QuestDataManager.Instance != null)
+        {
+            totalLevels = QuestDataManager.Instance.GetQuestCount();
+        }
+        else
+        {
+            // Fallback: load trực tiếp từ storage
+            var allQuests = QuestDataStorage.LoadAllQuests();
+            if (allQuests != null && allQuests.Count > 0)
+            {
+                totalLevels = allQuests.Count;
+            }
+        }
+        
+        // Unlock tất cả level từ 1 đến totalLevels
+        int unlockedCount = 0;
+        for (int i = 1; i <= totalLevels; i++)
+        {
+            // Kiểm tra xem level có bị locked không
+            if (QuestDataStorage.IsQuestLocked(i))
+            {
+                QuestDataStorage.UnlockQuest(i);
+                unlockedCount++;
+            }
+        }
+        
+        // Refresh cache của QuestDataManager
+        if (QuestDataManager.Instance != null)
+        {
+            QuestDataManager.Instance.Refresh();
+        }
+        
+        Debug.Log($"Đã unlock {unlockedCount} level. Tổng số level: {totalLevels}");
+        
+        // Refresh UI nếu đang ở SelectLevelPanel
+        if (UIManager.Instance != null && UIManager.Instance.selectLevelPanel != null)
+        {
+            SelectLevelPanel selectLevelPanel = UIManager.Instance.selectLevelPanel.GetComponentInChildren<SelectLevelPanel>();
+            if (selectLevelPanel != null)
+            {
+                selectLevelPanel.Refresh();
+            }
         }
     }
 

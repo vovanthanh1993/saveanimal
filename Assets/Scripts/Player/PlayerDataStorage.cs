@@ -19,8 +19,7 @@ public static class PlayerDataStorage
                     PlayerData data = JsonUtility.FromJson<PlayerData>(json);
                     if (data != null)
                     {
-                        if(data.health != 0) 
-                            return data;
+                        return data;
                     }
                 }
             }

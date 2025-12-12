@@ -229,20 +229,37 @@ public class AnimalSpawner : MonoBehaviour
         
         // Reset danh sách spawn points đã dùng
         usedSpawnPointIndices.Clear();
+        spawnedAnimals.Clear();
         
-        // Spawn animals cho mỗi objective
+        // Tính tổng requiredAmount của tất cả loại animal
+        int totalRequiredAmount = 0;
         foreach (var objective in quest.objectives)
         {
-            SpawnAnimalsForObjective(objective);
+            totalRequiredAmount += objective.requiredAmount;
         }
         
-        Debug.Log($"AnimalSpawner: Đã spawn {spawnedAnimals.Count} animals (chỉ spawn các loại có trong quest)");
+        // Bước 1: Ưu tiên spawn đủ requiredAmount cho TẤT CẢ các loại animal trước
+        foreach (var objective in quest.objectives)
+        {
+            SpawnRequiredAmountForObjective(objective);
+        }
+        
+        // Bước 2: Nếu tổng requiredAmount <= 6, spawn thêm 1 con cho mỗi loại (nếu còn chỗ)
+        if (totalRequiredAmount <= 6)
+        {
+            foreach (var objective in quest.objectives)
+            {
+                SpawnBonusAnimalForObjective(objective);
+            }
+        }
+        
+        Debug.Log($"AnimalSpawner: Đã spawn {spawnedAnimals.Count} animals. Tổng requiredAmount: {totalRequiredAmount}");
     }
     
     /// <summary>
-    /// Spawn animals cho một objective cụ thể
+    /// Spawn đủ requiredAmount cho một objective (ưu tiên cao nhất)
     /// </summary>
-    private void SpawnAnimalsForObjective(QuestObjective objective)
+    private void SpawnRequiredAmountForObjective(QuestObjective objective)
     {
         if (!animalPrefabDict.ContainsKey(objective.animalType))
         {
@@ -251,15 +268,18 @@ public class AnimalSpawner : MonoBehaviour
         }
         
         GameObject prefab = animalPrefabDict[objective.animalType];
+        int requiredAmount = objective.requiredAmount;
+        int actuallySpawned = 0;
         
-        // Spawn số lượng = requiredAmount + 1 tại các spawn point chưa dùng
-        int spawnAmount = objective.requiredAmount + 1;
-        for (int i = 0; i < spawnAmount; i++)
+        // Spawn đủ requiredAmount
+        // Nếu không còn spawn point trống thì ngừng spawn
+        for (int i = 0; i < requiredAmount; i++)
         {
             int spawnIndex = GetUnusedSpawnPointIndex();
             if (spawnIndex == -1)
             {
-                Debug.LogWarning($"AnimalSpawner: Không còn spawn point trống để spawn {objective.animalType}!");
+                // Không còn spawn point trống, ngừng spawn
+                Debug.LogWarning($"AnimalSpawner: Không còn spawn point trống để spawn {objective.animalType}! Cần {requiredAmount} con nhưng chỉ spawn được {actuallySpawned} con.");
                 break;
             }
             
@@ -280,9 +300,56 @@ public class AnimalSpawner : MonoBehaviour
             
             spawnedAnimals.Add(animal);
             usedSpawnPointIndices.Add(spawnIndex);
+            actuallySpawned++;
         }
         
-        Debug.Log($"AnimalSpawner: Đã spawn {spawnAmount} {objective.animalType} (yêu cầu: {objective.requiredAmount}, spawn thêm 1)");
+        // Kiểm tra xem đã spawn đủ requiredAmount chưa
+        if (actuallySpawned < requiredAmount)
+        {
+            Debug.LogError($"AnimalSpawner: Không thể spawn đủ {requiredAmount} {objective.animalType}! Chỉ spawn được {actuallySpawned} con. Thiếu {requiredAmount - actuallySpawned} con.");
+        }
+        else
+        {
+            Debug.Log($"AnimalSpawner: Đã spawn đủ {actuallySpawned} {objective.animalType} (yêu cầu: {requiredAmount})");
+        }
+    }
+    
+    /// <summary>
+    /// Spawn thêm 1 con bonus cho một objective (chỉ khi tổng requiredAmount <= 6)
+    /// </summary>
+    private void SpawnBonusAnimalForObjective(QuestObjective objective)
+    {
+        if (!animalPrefabDict.ContainsKey(objective.animalType))
+        {
+            return;
+        }
+        
+        GameObject prefab = animalPrefabDict[objective.animalType];
+        
+        // Spawn thêm 1 con nếu còn chỗ
+        int spawnIndex = GetUnusedSpawnPointIndex();
+        if (spawnIndex != -1)
+        {
+            Vector3 spawnPosition = spawnPoints[spawnIndex].position;
+            Quaternion spawnRotation = Quaternion.Euler(0, 180, 0);
+            GameObject animal = Instantiate(prefab, spawnPosition, spawnRotation);
+            
+            AnimalItem animalItem = animal.GetComponent<AnimalItem>();
+            if (animalItem == null)
+            {
+                animalItem = animal.AddComponent<AnimalItem>();
+            }
+            animalItem.SetAnimalType(objective.animalType);
+            
+            spawnedAnimals.Add(animal);
+            usedSpawnPointIndices.Add(spawnIndex);
+            
+            Debug.Log($"AnimalSpawner: Đã spawn thêm 1 {objective.animalType} (bonus)");
+        }
+        else
+        {
+            Debug.Log($"AnimalSpawner: Không còn chỗ để spawn thêm 1 {objective.animalType} (bonus)");
+        }
     }
     
     /// <summary>
@@ -340,23 +407,6 @@ public class AnimalSpawner : MonoBehaviour
         ClearSpawnedAnimals();
         SpawnAnimalsFromQuest();
     }
-    
-    void OnDrawGizmosSelected()
-    {
-        // Vẽ spawn points
-        if (spawnPoints != null && spawnPoints.Count > 0)
-        {
-            Gizmos.color = Color.yellow;
-            foreach (var point in spawnPoints)
-            {
-                if (point != null)
-                {
-                    Gizmos.DrawSphere(point.position, 1f);
-                }
-            }
-        }
-    }
-    
 }
 
 /// <summary>
