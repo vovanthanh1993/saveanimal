@@ -14,5 +14,6 @@ public class HintPanel : MonoBehaviour
     {
         gameObject.SetActive(false);
         Time.timeScale = 1f;
+        AudioManager.Instance.PlayCloseSound();
     }
 }

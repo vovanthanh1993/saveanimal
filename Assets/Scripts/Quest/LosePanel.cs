@@ -13,10 +13,17 @@ public class LosePanel : MonoBehaviour
 
     void OnRetryButtonClicked()
     {
+        // Reset health trước khi load scene lại
+        if (HealthPanel.Instance != null)
+        {
+            HealthPanel.Instance.ResetHealth();
+        }
+        
         string sceneName = SceneManager.GetActiveScene().name;
         GameCommonUtils.LoadScene(sceneName);
         gameObject.SetActive(false);
         Time.timeScale = 1f;
+        AudioManager.Instance.PlaySelectSound();
     }
 
     void OnHomeButtonClicked() {
@@ -24,5 +31,6 @@ public class LosePanel : MonoBehaviour
         Time.timeScale = 1f;
         UIManager.Instance.ShowHomePanel(true);
         GameCommonUtils.LoadScene("HomeScene");
+        AudioManager.Instance.PlaySelectSound();
     }
 }

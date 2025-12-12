@@ -313,4 +313,8 @@ public class AudioManager : MonoBehaviour
     public void PlayRewardSound() {
         PlaySound("se_open_reward");
     }
+
+    public void PlayFallSound() {
+        PlaySound("se_fall");
+    }
 }

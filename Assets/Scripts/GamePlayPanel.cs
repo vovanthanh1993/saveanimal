@@ -16,6 +16,12 @@ public class GamePlayPanel : MonoBehaviour
         {
             losePanel.SetActive(false);
         }
+
+        // Reset health khi bắt đầu level mới
+        if (HealthPanel.Instance != null)
+        {
+            HealthPanel.Instance.ResetHealth();
+        }
     }
 
     public void ShowWinPanel(bool isShow, int star, int reward){

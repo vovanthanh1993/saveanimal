@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 public class PlayerController : MonoBehaviour
 {
@@ -34,6 +35,13 @@ public class PlayerController : MonoBehaviour
     public PlayerAnimation playerAnimation;
     
     private Vector3 initialSpawnPosition;
+    
+    // Flag để tránh trừ mạng nhiều lần khi va chạm với nhiều ResetTag cùng lúc
+    private bool isReturningToSpawn = false;
+    private float lastSpawnReturnTime = 0f;
+    [Header("Spawn Return Settings")]
+    [Tooltip("Thời gian cooldown sau khi về spawn point (giây)")]
+    [SerializeField] private float spawnReturnCooldown = 0.5f;
 
     private void Awake()
     {
@@ -93,6 +101,10 @@ public class PlayerController : MonoBehaviour
         {
             initialSpawnPosition = transform.position;
         }
+        
+        // Reset flag khi bắt đầu level mới
+        isReturningToSpawn = false;
+        lastSpawnReturnTime = 0f;
         
         // Camera sẽ được quản lý bởi CameraFollowController tự động
     }
@@ -260,7 +272,11 @@ public class PlayerController : MonoBehaviour
     {
         if (other.CompareTag("ResetTag"))
         {
-            ReturnToSpawnPoint();
+            // Kiểm tra cooldown để tránh trừ mạng nhiều lần khi va chạm với nhiều ResetTag cùng lúc
+            if (!isReturningToSpawn && Time.time - lastSpawnReturnTime >= spawnReturnCooldown)
+            {
+                ReturnToSpawnPoint();
+            }
         }
 
         if (other.CompareTag("EndTag"))
@@ -358,10 +374,34 @@ public class PlayerController : MonoBehaviour
     
     /// <summary>
     /// Quay về spawn point
-    /// </summary>s
+    /// </summary>
     private void ReturnToSpawnPoint()
     {
-        AudioManager.Instance.PlayHurtSound();
+        // Đánh dấu đang trong quá trình về spawn để tránh xử lý nhiều lần
+        if (isReturningToSpawn)
+        {
+            return;
+        }
+        
+        isReturningToSpawn = true;
+        lastSpawnReturnTime = Time.time;
+        
+        AudioManager.Instance.PlayFallSound();
+        
+        // Trừ 1 mạng khi về spawn point
+        if (HealthPanel.Instance != null)
+        {
+            bool stillHasLives = HealthPanel.Instance.LoseLife();
+            
+            // Nếu hết mạng, không cần teleport nữa vì đã hiển thị lose panel
+            if (!stillHasLives)
+            {
+                Debug.Log("Player đã hết mạng! Không thể tiếp tục.");
+                isReturningToSpawn = false; // Reset flag
+                return;
+            }
+        }
+        
         // Tắt CharacterController tạm thời để teleport
         if (characterController != null)
         {
@@ -379,6 +419,18 @@ public class PlayerController : MonoBehaviour
         }
         
         Debug.Log("Player đã quay về spawn point!");
+        
+        // Reset flag sau một khoảng thời gian ngắn để cho phép xử lý lần tiếp theo
+        StartCoroutine(ResetSpawnReturnFlag());
+    }
+    
+    /// <summary>
+    /// Reset flag sau khi hoàn thành quá trình về spawn point
+    /// </summary>
+    private System.Collections.IEnumerator ResetSpawnReturnFlag()
+    {
+        yield return new WaitForSeconds(spawnReturnCooldown);
+        isReturningToSpawn = false;
     }
     
     /// <summary>

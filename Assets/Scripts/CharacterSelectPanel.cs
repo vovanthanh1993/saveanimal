@@ -61,10 +61,44 @@ public class CharacterSelectPanel : MonoBehaviour
 
     private void OnEnable()
     {
-        // Refresh UI khi panel được hiển thị
-        if (manager != null && manager.GetAllCharacters().Count > 0)
+        // Đảm bảo manager được khởi tạo
+        if (manager == null)
         {
-            UpdateButtonStates();
+            manager = CharacterSelectManager.Instance;
+            if (manager == null)
+            {
+                Debug.LogError("CharacterSelectPanel: Không tìm thấy CharacterSelectManager!");
+                return;
+            }
+        }
+
+        // Setup buttons lại để đảm bảo listeners hoạt động
+        SetupButtons();
+        
+        // Refresh UI khi panel được hiển thị
+        var allCharacters = manager.GetAllCharacters();
+        if (allCharacters.Count > 0)
+        {
+            // Nếu currentDisplayedCharacter chưa được set hoặc không hợp lệ, khởi tạo lại
+            if (string.IsNullOrEmpty(currentDisplayedCharacter) || !allCharacters.Contains(currentDisplayedCharacter))
+            {
+                // Hiển thị character đã chọn hoặc character đầu tiên
+                string selectedName = manager.GetSelectedCharacterName();
+                
+                if (!string.IsNullOrEmpty(selectedName) && allCharacters.Contains(selectedName))
+                {
+                    ShowCharacterByName(selectedName);
+                }
+                else
+                {
+                    ShowCharacterByName(allCharacters[0]);
+                }
+            }
+            else
+            {
+                // Nếu đã có character được hiển thị, chỉ cần update button states
+                UpdateButtonStates();
+            }
         }
     }
 
@@ -73,21 +107,31 @@ public class CharacterSelectPanel : MonoBehaviour
     /// </summary>
     private void SetupButtons()
     {
+        // Remove listeners cũ trước khi add mới để tránh duplicate
         if (nextBtn != null)
         {
+            nextBtn.onClick.RemoveAllListeners();
             nextBtn.onClick.AddListener(OnNextButtonClicked);
         }
         if (backBtn != null)
         {
+            backBtn.onClick.RemoveAllListeners();
             backBtn.onClick.AddListener(OnBackButtonClicked);
         }
         if (buyBtn != null)
         {
+            buyBtn.onClick.RemoveAllListeners();
             buyBtn.onClick.AddListener(OnBuyButtonClicked);
         }
         if (selectBtn != null)
         {
+            selectBtn.onClick.RemoveAllListeners();
             selectBtn.onClick.AddListener(OnSelectButtonClicked);
+        }
+        if (homeBtn != null)
+        {
+            homeBtn.onClick.RemoveAllListeners();
+            homeBtn.onClick.AddListener(OnHomeButtonClicked);
         }
     }
 
