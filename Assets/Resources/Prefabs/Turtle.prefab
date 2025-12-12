@@ -588,7 +588,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   animalType: 19
   collectEffect: {fileID: 0}
-  collectSoundName: animal_collect
   pickupAnimationDuration: 0.5
   finalScale: 0.5
   flyHeight: 2
@@ -642,5 +641,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1, y: 1.0409364, z: 1}
+  m_Center: {x: 0, y: 0.5377117, z: 0}
