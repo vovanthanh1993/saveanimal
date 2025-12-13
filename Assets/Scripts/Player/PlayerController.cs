@@ -28,7 +28,7 @@ public class PlayerController : MonoBehaviour
     
     [Header("Input Control")]
     [Tooltip("Cho phép nhận input từ người chơi hay không")]
-    [SerializeField] private bool canReceiveInput = true;
+    [SerializeField] private bool canReceiveInput = false;
     [SerializeField] private bool isDisable = false;
     
     // Components
@@ -436,6 +436,14 @@ public class PlayerController : MonoBehaviour
         {
             SetIdleAnimation();
         }
+    }
+
+    /// <summary>
+    /// Set cho phép nhận input hay không
+    /// </summary>
+    public void SetCanReceiveInput(bool canReceive)
+    {
+        canReceiveInput = canReceive;
     }
 
     public void SetIdleAnimation()

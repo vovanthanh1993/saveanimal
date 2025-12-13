@@ -85,7 +85,39 @@ public class PlayerSpawn : MonoBehaviour
         spawnedPlayer.name = $"Player_{selectedCharacterName}";
         spawnedPlayer.tag = "Player";
 
+        // Enable input cho player
+        EnablePlayerInput(spawnedPlayer);
+
         Debug.Log($"PlayerSpawn: Đã spawn player {selectedCharacterName} tại vị trí {spawnPosition}");
+    }
+    
+    /// <summary>
+    /// Enable input cho player đã spawn
+    /// </summary>
+    private void EnablePlayerInput(GameObject player)
+    {
+        if (player == null) return;
+
+        // Tìm PlayerController component
+        PlayerController playerController = player.GetComponent<PlayerController>();
+        if (playerController != null)
+        {
+            // Enable input cho player
+            playerController.SetCanReceiveInput(true);
+            playerController.SetDisable(false);
+            Debug.Log("PlayerSpawn: Đã enable input cho player");
+        }
+        else
+        {
+            Debug.LogWarning("PlayerSpawn: Không tìm thấy PlayerController component trong player!");
+        }
+
+        // Enable InputManager nếu có
+        if (InputManager.Instance != null)
+        {
+            // InputManager sẽ tự động enable khi cần
+            // Không cần gọi EnablePlayerInput() vì nó đã được enable trong Awake
+        }
     }
 
     /// <summary>

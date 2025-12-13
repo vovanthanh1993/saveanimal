@@ -309,6 +309,9 @@ public class CharacterSelectManager : MonoBehaviour
             return false;
         }
 
+        // Disable input của character đang spawn (nếu có)
+        DisableCharacterInput();
+
         // Chọn character
         selectedCharacterName = characterName;
         PlayerPrefs.SetString("SelectedCharacter", selectedCharacterName);
@@ -316,6 +319,37 @@ public class CharacterSelectManager : MonoBehaviour
 
         Debug.Log($"CharacterSelectManager: Đã chọn character {selectedCharacterName}");
         return true;
+    }
+    
+    /// <summary>
+    /// Disable input của character đang được spawn
+    /// </summary>
+    private void DisableCharacterInput()
+    {
+        // Disable input từ InputManager
+        if (InputManager.Instance != null)
+        {
+            InputManager.Instance.DisablePlayerInput();
+        }
+
+        // Disable input từ character đang spawn (nếu có)
+        if (currentSpawnedCharacter != null)
+        {
+            PlayerController playerController = currentSpawnedCharacter.GetComponent<PlayerController>();
+            if (playerController != null)
+            {
+                playerController.SetDisable(true);
+            }
+            else
+            {
+                // Tìm PlayerController trong children
+                playerController = currentSpawnedCharacter.GetComponentInChildren<PlayerController>();
+                if (playerController != null)
+                {
+                    playerController.SetDisable(true);
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -424,6 +458,9 @@ public class CharacterSelectManager : MonoBehaviour
         
         // Đặt tên để dễ debug
         currentSpawnedCharacter.name = $"Character_{selectedCharacterName}";
+
+        // Disable input của character khi spawn trong character select screen
+        DisableCharacterInput();
 
         Debug.Log($"CharacterSelectManager: Đã spawn character {selectedCharacterName} tại characterSpawnPoint.");
     }

@@ -1784,7 +1784,7 @@ MonoBehaviour:
   camTarget: {fileID: 6840423621618699383}
   animalPoint: {fileID: 0}
   spawnPoint: {fileID: 0}
-  canReceiveInput: 1
+  canReceiveInput: 0
   isDisable: 0
   playerAnimation: {fileID: 6557621794592324433}
   spawnReturnCooldown: 0.5
