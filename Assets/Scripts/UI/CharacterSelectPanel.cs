@@ -54,6 +54,16 @@ public class CharacterSelectPanel : MonoBehaviour
 
     void OnHomeButtonClicked()
     {
+        // Quay lại hiển thị character đang được select trước khi về home
+        if (manager != null)
+        {
+            string selectedCharacterName = manager.GetSelectedCharacterName();
+            if (!string.IsNullOrEmpty(selectedCharacterName))
+            {
+                ShowCharacterByName(selectedCharacterName);
+            }
+        }
+        
         UIManager.Instance.ShowHomePanel(true);
         UIManager.Instance.ShowCharacterSelectPanel(false);
         AudioManager.Instance.PlayCloseSound();
