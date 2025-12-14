@@ -244,8 +244,8 @@ public class AnimalSpawner : MonoBehaviour
             SpawnRequiredAmountForObjective(objective);
         }
         
-        // Bước 2: Nếu tổng requiredAmount <= 6, spawn thêm 1 con cho mỗi loại (nếu còn chỗ)
-        if (totalRequiredAmount <= 6)
+        // Bước 2: Nếu tổng requiredAmount < 6, spawn thêm 1 con cho mỗi loại (nếu còn chỗ)
+        if (totalRequiredAmount < 6)
         {
             foreach (var objective in quest.objectives)
             {
@@ -315,7 +315,7 @@ public class AnimalSpawner : MonoBehaviour
     }
     
     /// <summary>
-    /// Spawn thêm 1 con bonus cho một objective (chỉ khi tổng requiredAmount <= 6)
+    /// Spawn thêm 1 con bonus cho một objective (chỉ khi tổng requiredAmount < 6)
     /// </summary>
     private void SpawnBonusAnimalForObjective(QuestObjective objective)
     {

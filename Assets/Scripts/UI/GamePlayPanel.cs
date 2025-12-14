@@ -26,6 +26,7 @@ public class GamePlayPanel : MonoBehaviour
 
     public void ShowWinPanel(bool isShow, int star, int reward){
         AudioManager.Instance.PlayWinSound();
+        AudioManager.Instance.PlayRewardSound();
         winPanel.SetActive(isShow);
         winPanel.GetComponent<WinPanel>().Init(star, reward);
     }
