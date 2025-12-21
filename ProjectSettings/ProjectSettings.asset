@@ -854,7 +854,10 @@ PlayerSettings:
   webGLWebAssemblyBigInt: 0
   webGLCloseOnQuit: 0
   webWasm2023: 0
-  scriptingDefineSymbols: {}
+  scriptingDefineSymbols:
+    Android: CF_FORCE_MOBILE_MODE
+    Windows Store Apps: CF_FORCE_MOBILE_MODE
+    iPhone: CF_FORCE_MOBILE_MODE
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:
@@ -952,7 +955,7 @@ PlayerSettings:
   qnxGraphicConfPath: 
   apiCompatibilityLevel: 6
   captureStartupLogs: {}
-  activeInputHandler: 1
+  activeInputHandler: 0
   windowsGamepadBackendHint: 0
   cloudProjectId: 8ac6c1f1-f081-44b2-a924-7df7e4d0b988
   framebufferDepthMemorylessMode: 0
