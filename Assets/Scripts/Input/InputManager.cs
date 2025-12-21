@@ -42,10 +42,47 @@ public class InputManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Tìm lại TouchJoystick trong scene (dùng khi gameplay panel được kích hoạt)
+    /// </summary>
+    public void RefreshTouchJoystick()
+    {
+        if (touchJoystick == null || !touchJoystick.gameObject.activeInHierarchy)
+        {
+            // Tìm lại TouchJoystick, bao gồm cả những object đang inactive
+            TouchJoystick[] allJoysticks = Resources.FindObjectsOfTypeAll<TouchJoystick>();
+            if (allJoysticks != null && allJoysticks.Length > 0)
+            {
+                // Ưu tiên joystick đang active, nếu không có thì lấy joystick đầu tiên
+                TouchJoystick activeJoystick = null;
+                foreach (var joystick in allJoysticks)
+                {
+                    if (joystick.gameObject.activeInHierarchy)
+                    {
+                        activeJoystick = joystick;
+                        break;
+                    }
+                }
+                
+                touchJoystick = activeJoystick != null ? activeJoystick : allJoysticks[0];
+                if (touchJoystick != null)
+                {
+                    Debug.Log($"[InputManager] Đã tìm thấy TouchJoystick: {touchJoystick.name}");
+                }
+            }
+        }
+    }
+
+    /// <summary>
     /// Lấy input vector di chuyển từ joystick hoặc Input Manager cũ
     /// </summary>
     public Vector2 InputMoveVector()
     {
+        // Nếu chưa có joystick reference, thử tìm lại
+        if (touchJoystick == null)
+        {
+            RefreshTouchJoystick();
+        }
+        
         // Ưu tiên lấy input từ Control-Freak-2 TouchJoystick nếu có và đang active
         if (touchJoystick != null && touchJoystick.gameObject.activeInHierarchy)
         {

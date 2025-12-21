@@ -62,6 +62,12 @@ public class UIManager : MonoBehaviour
         if (gamePlayPanel != null)
         {
             gamePlayPanel.gameObject.SetActive(isShow);
+            
+            // Refresh TouchJoystick reference khi gameplay panel được hiển thị
+            if (isShow && InputManager.Instance != null)
+            {
+                InputManager.Instance.RefreshTouchJoystick();
+            }
         }
     }
 
